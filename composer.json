@@ -1,0 +1,14 @@
+{
+    "name": "slim/template",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "AlainKRSS",
+            "email": "cvt.alain@gmail.com"
+        }
+    ],
+    "require": {
+        "slim/slim": "^3.0",
+        "slim/twig-view": "^2.4"
+    }
+}
