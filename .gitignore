@@ -2,8 +2,6 @@
 
 ### Git ###
 *.orig
-public/
-gulpfile.js
 
 ### macOS ###
 *.DS_Store
