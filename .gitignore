@@ -1,5 +1,9 @@
 # Created by https://www.gitignore.io/api/git,node,macos,windows,visualstudiocode
 
+### Project ###
+dist/
+public/
+
 ### Git ###
 *.orig
 
