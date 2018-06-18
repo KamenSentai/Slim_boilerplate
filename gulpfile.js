@@ -19,7 +19,7 @@ const gulpUglify       = require('gulp-uglify')
  */
 const path =
 {
-    project : 'works/pokedex/public/',
+    project : 'works/slim_template/public/',
 
     includes :
     {
@@ -82,18 +82,26 @@ const extension =
 /**
  * Sets
  */
-const set = (path, depth, extension) =>
+const set = (path, depth, extension, exception = undefined) =>
 {
-    const set = []
-    let depth = ''
+    const pathSet     = []
+    let pathDirectory = ''
 
     for (let i = 0 ; i <= depth ; i++)
     {
-        set.push(`${path}${depth}*${extension}`)
-        depth += '**/'
-    }
+        pathSet.push(`${path}${pathDirectory}*${extension}`)
+        pathDirectory += '**/'
+	}
 
-    return set
+	if (exception)
+	{
+		for (const file of exception)
+		{
+			pathSet.push(`!${file}`)
+		}
+	}
+
+    return pathSet
 }
 
 /**
@@ -104,8 +112,8 @@ const file =
     assets   : set(path.build.assets,  depth.assets,   extension.assets),
     scripts  : set(path.build.scripts, depth.scripts,  extension.scripts),
     styles   : set(path.build.styles,  depth.styles,   extension.styles),
-    includes : set(path.includes.root, depth.includes, extension.includes),
-    index    : `${path.public.root}${name.root}${extension.includes}`
+    includes : set(path.includes.root, depth.includes, extension.includes, [`${path.includes.root}index.php`]),
+    index    : `${path.includes.root}${name.root}${extension.includes}`
 }
 
 /**
