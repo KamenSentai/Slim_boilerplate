@@ -11,10 +11,9 @@ class Database
     private $pdo;
     private $prepare;
 
-    public function __construct($pdo, $ip)
+    public function __construct($pdo)
     {
         $this->pdo = $pdo;
-        $this->ip  = $ip;
     }
 
     /**
