@@ -19,31 +19,31 @@ const gulpUglify       = require('gulp-uglify')
  */
 const path =
 {
-    project : 'works/slim_template/public/',
+	project : 'works/slim_template/public/',
 
-    includes :
-    {
-        root        : './includes/',
-        settings    : './includes/settings',
-        routes      : './includes/routes',
-        models      : './includes/models',
-        views       : './includes/views',
-        controllers : './includes/controllers'
-    },
+	includes :
+	{
+		root        : './includes/',
+		settings    : './includes/settings',
+		routes      : './includes/routes',
+		models      : './includes/models',
+		views       : './includes/views',
+		controllers : './includes/controllers'
+	},
 	build :
 	{
 		root    : './build/',
 		styles  : './build/styles/',
 		scripts : './build/scripts/',
 		assets  : './build/assets/'
-    },
+	},
 	public :
 	{
 		root    : './public/',
 		styles  : './public/styles/',
 		scripts : './public/scripts/',
 		assets  : './public/assets/'
-    }
+	}
 }
 
 /**
@@ -51,10 +51,10 @@ const path =
  */
 const depth =
 {
-    assets   : 2,
-    scripts  : 2,
-    styles   : 2,
-    includes : 2
+	assets   : 2,
+	scripts  : 2,
+	styles   : 2,
+	includes : 2
 }
 
 /**
@@ -62,10 +62,10 @@ const depth =
  */
 const name =
 {
-    any     : '*',
-    scripts : 'app',
-    styles  : 'app',
-    root    : 'index'
+	any     : '*',
+	scripts : 'app',
+	styles  : 'app',
+	root    : 'index'
 }
 
 /**
@@ -73,10 +73,10 @@ const name =
  */
 const extension =
 {
-    assets   : '.*',
-    scripts  : '.js',
-    styles   : '.styl',
-    includes : '.+(php|twig)'
+	assets   : '.*',
+	scripts  : '.js',
+	styles   : '.styl',
+	includes : '.+(php|twig)'
 }
 
 /**
@@ -84,13 +84,13 @@ const extension =
  */
 const set = (path, depth, extension, exception = undefined) =>
 {
-    const pathSet     = []
-    let pathDirectory = ''
+	const pathSet     = []
+	let pathDirectory = ''
 
-    for (let i = 0 ; i <= depth ; i++)
-    {
-        pathSet.push(`${path}${pathDirectory}*${extension}`)
-        pathDirectory += '**/'
+	for (let i = 0 ; i <= depth ; i++)
+	{
+		pathSet.push(`${path}${pathDirectory}*${extension}`)
+		pathDirectory += '**/'
 	}
 
 	if (exception)
@@ -101,7 +101,7 @@ const set = (path, depth, extension, exception = undefined) =>
 		}
 	}
 
-    return pathSet
+	return pathSet
 }
 
 /**
@@ -109,11 +109,11 @@ const set = (path, depth, extension, exception = undefined) =>
  */
 const file =
 {
-    assets   : set(path.build.assets,  depth.assets,   extension.assets),
-    scripts  : set(path.build.scripts, depth.scripts,  extension.scripts),
-    styles   : set(path.build.styles,  depth.styles,   extension.styles),
-    includes : set(path.includes.root, depth.includes, extension.includes, [`${path.includes.root}index.php`]),
-    index    : `${path.includes.root}${name.root}${extension.includes}`
+	assets   : set(path.build.assets,  depth.assets,   extension.assets),
+	scripts  : set(path.build.scripts, depth.scripts,  extension.scripts),
+	styles   : set(path.build.styles,  depth.styles,   extension.styles),
+	includes : set(path.includes.root, depth.includes, extension.includes, [`${path.includes.root}index.php`]),
+	index    : `${path.includes.root}${name.root}${extension.includes}`
 }
 
 /**
@@ -121,7 +121,7 @@ const file =
  */
 const message =
 {
-    compiled   : '<%= file.relative %> : file compiled',
+	compiled   : '<%= file.relative %> : file compiled',
 	exported   : '<%= file.relative %> : file exported',
 	transpiled : '<%= file.relative %> : file transpiled',
 	updated    : '<%= file.relative %> : file updated',
@@ -142,15 +142,17 @@ gulp.task('assets', () =>
 						message : message.error,
 						sound   : 'beep'
 					})
-			}))
-        .pipe(gulp.dest(path.public.assets))
-        .pipe(browserSync.stream())
+			})
+		)
+		.pipe(gulp.dest(path.public.assets))
+		.pipe(browserSync.stream())
 		.pipe(gulpNotify(
 			{
 				title   : 'Assets',
 				message : message.exported,
 				sound   : 'beep'
-			}))
+			})
+		)
 })
 
 /**
@@ -166,7 +168,8 @@ gulp.task('scripts', () =>
 		.transform(babelify.configure(
 			{
 				presets : ['babel-preset-env'].map(require.resolve)
-			}))
+			})
+		)
 		.bundle()
 		.pipe(source(`${name.scripts}.js`))
 		.pipe(buffer())
@@ -178,15 +181,17 @@ gulp.task('scripts', () =>
 						message : message.error,
 						sound   : 'beep'
 					})
-			}))
-        .pipe(gulp.dest(path.public.scripts))
-        .pipe(browserSync.stream())
+			})
+		)
+		.pipe(gulp.dest(path.public.scripts))
+		.pipe(browserSync.stream())
 		.pipe(gulpNotify(
 			{
 				title   : 'Scripts',
 				message : message.transpiled,
 				sound   : 'beep'
-			}))
+			})
+		)
 })
 
 /**
@@ -203,17 +208,19 @@ gulp.task('styles', () =>
 						message : message.error,
 						sound   : 'beep'
 					})
-			}))
+			})
+		)
 		.pipe(gulpStylus())
 		.pipe(gulpAutoprefixer())
-        .pipe(gulp.dest(path.public.styles))
-        .pipe(browserSync.stream())
+		.pipe(gulp.dest(path.public.styles))
+		.pipe(browserSync.stream())
 		.pipe(gulpNotify(
 			{
 				title   : 'Styles',
 				message : message.compiled,
 				sound   : 'beep'
-			}))
+			})
+		)
 })
 
 /**
@@ -230,13 +237,15 @@ gulp.task('includes', () =>
 						message : message.error,
 						sound   : 'beep'
 					})
-			}))
+			})
+		)
 		.pipe(gulpNotify(
 			{
 				title   : 'Includes',
 				message : message.updated,
 				sound   : 'beep'
-			}))
+			})
+		)
 })
 
 /**
@@ -253,14 +262,15 @@ gulp.task('index', () =>
 						message : message.error,
 						sound   : 'beep'
 					})
-            }))
-        .pipe(gulp.dest(path.public.root))
-		.pipe(gulpNotify(
+			})
+		)
+		.pipe(gulp.dest(path.public.root)).pipe(gulpNotify(
 			{
 				title   : 'Index',
 				message : message.updated,
 				sound   : 'beep'
-			}))
+			})
+		)
 })
 
 /**
@@ -273,16 +283,17 @@ gulp.task('watch', () =>
 		{
 			browser : 'Google Chrome',
 			proxy   : `http://localhost/${path.project}`
-		})
+		}
+	)
 
-    // Watch assets
-    gulp.watch(file.assets, ['assets'])
+	// Watch assets
+	gulp.watch(file.assets, ['assets'])
 
-    // Watch scripts
-    gulp.watch(file.scripts, ['scripts'])
+	// Watch scripts
+	gulp.watch(file.scripts, ['scripts'])
 
-    // Watch styles
-    gulp.watch(file.styles, ['styles'])
+	// Watch styles
+	gulp.watch(file.styles, ['styles'])
 
 	// Watch includes
 	gulp.watch(file.includes, ['includes'])
@@ -307,7 +318,8 @@ gulp.task('minify', () =>
 				title   : 'Styles',
 				message : message.exported,
 				sound   : 'beep'
-			}))
+			})
+		)
 
 	// Styles
 	gulp.src([`${path.public.styles}*.css`])
@@ -318,7 +330,8 @@ gulp.task('minify', () =>
 				title   : 'Scripts',
 				message : message.exported,
 				sound   : 'beep'
-			}))
+			})
+		)
 })
 
 /**
