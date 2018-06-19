@@ -76,7 +76,7 @@ const extension =
 	assets   : '.*',
 	scripts  : '.js',
 	styles   : '.styl',
-	includes : '.+(php|twig)'
+	includes : '.+(php|twig|htaccess)'
 }
 
 /**
@@ -113,7 +113,7 @@ const file =
 	scripts  : set(path.build.scripts, depth.scripts,  extension.scripts),
 	styles   : set(path.build.styles,  depth.styles,   extension.styles),
 	includes : set(path.includes.root, depth.includes, extension.includes, [`${path.includes.root}index.php`]),
-	index    : `${path.includes.root}${name.root}${extension.includes}`
+	index    : [`${path.includes.root}${name.root}${extension.includes}`, `${path.includes.root}${extension.includes}`]
 }
 
 /**
