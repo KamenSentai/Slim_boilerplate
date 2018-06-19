@@ -3,7 +3,7 @@
 namespace Template\Models;
 
 /**
- * Class Pokemon
+ * Class Address
  * @author Alain Cao Van Truong <cvt.alain@gmail.com>
  */
 class Address

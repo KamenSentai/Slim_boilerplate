@@ -3,7 +3,7 @@
 namespace Template\Models;
 
 /**
- * Class Api
+ * Class Data
  * @author Alain Cao Van Truong <cvt.alain@gmail.com>
  */
 class Data

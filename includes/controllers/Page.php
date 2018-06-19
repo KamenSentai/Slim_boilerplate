@@ -8,7 +8,7 @@ use \Psr\Http\Message\ResponseInterface      as Response;
 use \Slim\Exception\NotFoundException        as Exception;
 
 /**
- * Class Pokemon
+ * Class Page
  * @author Alain Cao Van Truong <cvt.alain@gmail.com>
  */
 class Page
