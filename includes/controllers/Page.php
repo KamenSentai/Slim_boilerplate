@@ -5,6 +5,7 @@ namespace Template\Controllers;
 // Namespaces
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface      as Response;
+use \Slim\Exception\NotFoundException        as Exception;
 
 /**
  * Class Pokemon
@@ -26,6 +27,8 @@ class Page
      */
     public function getHome(Request $request, Response $response)
     {
+        if (isset($error))
+            throw new Exception($request, $response);
         return $this->container->view->render($response, 'pages/home.twig', $this->container->getHome);
     }
 
