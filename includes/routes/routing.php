@@ -8,5 +8,5 @@ use \Template\Views       as TV;
 use \Template\Controllers as TC;
 
 // Home
-$app->get('/',  TC\Page::class . ':getHome')->setName('home');
-$app->post('/', TC\Page::class . ':postHome');
+$app->get('/',  TC\PageController::class . ':getHome')->setName('home');
+$app->post('/', TC\PageController::class . ':postHome');
