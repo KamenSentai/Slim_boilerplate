@@ -9,28 +9,26 @@ use \Template\Controllers as TC;
 $container = $app->getContainer();
 
 // View
-$container['view'] = function($container)
-{
-    // Initialize views
-    $view   = new \Slim\Views\Twig('../includes/views');
-    $router = $container->get('router');
-    $uri    = \Slim\Http\Uri::createFromEnvironment(new \Slim\Http\Environment($_SERVER));
-    $view->addExtension(new \Slim\Views\TwigExtension($router, $uri));
+$container['view'] = function($container) {
+  // Initialize views
+  $view   = new \Slim\Views\Twig('../includes/views');
+  $router = $container->get('router');
+  $uri    = \Slim\Http\Uri::createFromEnvironment(new \Slim\Http\Environment($_SERVER));
+  $view->addExtension(new \Slim\Views\TwigExtension($router, $uri));
 
-    return $view;
+  return $view;
 };
 
 // Database
-$container['database'] = function($container)
-{
-    // Connect to database
-    $db  = $container['settings']['database'];
-    $pdo = new PDO('mysql:host='.$db['host'].';dbname='.$db['name'].';port='.$db['port'], $db['user'], $db['pass']);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$container['database'] = function($container) {
+  // Connect to database
+  $db  = $container['settings']['database'];
+  $pdo = new PDO('mysql:host='.$db['host'].';dbname='.$db['name'].';port='.$db['port'], $db['user'], $db['pass']);
+  $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Connect to database
-    $database = new TM\Database($pdo);
+  // Connect to database
+  $database = new TM\Database($pdo);
 
-    return $database;
+  return $database;
 };

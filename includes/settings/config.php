@@ -8,4 +8,4 @@ define('DB_USER', 'root');
 define('DB_PASS', 'root');
 
 // Api
-define('API_ID', '');
+define('API_KEY', '');
