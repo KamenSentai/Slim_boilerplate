@@ -1,340 +1,248 @@
-/**
- * Requires
- */
-const browserSync      = require('browser-sync').create()
-const babelify         = require('babelify')
-const browserify       = require('browserify')
-const buffer           = require('vinyl-buffer')
-const source           = require('vinyl-source-stream')
-const gulp             = require('gulp')
-const gulpAutoprefixer = require('gulp-autoprefixer')
-const gulpCssnano      = require('gulp-cssnano')
-const gulpNotify       = require('gulp-notify')
-const gulpPlumber      = require('gulp-plumber')
-const gulpStylus       = require('gulp-stylus')
-const gulpUglify       = require('gulp-uglify')
+// Imports plugins
 
-/**
- * Paths
- */
-const path =
-{
-	project : 'works/slim_template/public/',
+import gulp            from 'gulp'
+import gulpLoadPlugins from 'gulp-load-plugins'
+import browserSync     from 'browser-sync'
+import babelify        from 'babelify'
+import browserify      from 'browserify'
+import source          from 'vinyl-source-stream'
+import buffer          from 'vinyl-buffer'
+import watchify        from 'watchify'
 
-	includes :
-	{
-		root        : './includes/',
-		settings    : './includes/settings',
-		routes      : './includes/routes',
-		models      : './includes/models',
-		views       : './includes/views',
-		controllers : './includes/controllers'
-	},
-	build :
-	{
-		root    : './build/',
-		styles  : './build/styles/',
-		scripts : './build/scripts/',
-		assets  : './build/assets/'
-	},
-	public :
-	{
-		root    : './public/',
-		styles  : './public/styles/',
-		scripts : './public/scripts/',
-		assets  : './public/assets/'
-	}
+// Launch plugins loader
+
+const $ = gulpLoadPlugins()
+
+// Create session
+
+browserSync.create()
+
+// Build paths
+
+const server  = 'htdocs'
+const folders = process.cwd().split('/')
+const project = `${folders[folders.length - 1]}/`
+
+let local = ''
+
+const buildLocal = () => {
+  let index = 0
+  for (const folder of folders) {
+    if (folder == server) {
+      index = folders.indexOf(server)
+      for (let i = index + 1 ; i < folders.length ; i++) {
+        if (folders[i] != project) local += `${folders[i]}/`
+        else break
+      }
+      break
+    }
+  }
+}
+buildLocal()
+
+const config = {
+  public  : 'public/',
+  sources : 'sources/'
+}
+
+const message = {
+  compiled   : '<%= file.relative %>: file compiled',
+  exported   : '<%= file.relative %>: file exported',
+  transpiled : '<%= file.relative %>: file transpiled',
+  minified   : '<%= file.relative %>: file minified',
+  cleaned    : '<%= file.relative %>: file cleaned',
+  error      : '<%= error.message %>'
 }
 
 /**
- * Depths
+ * 
+ * Development
+ * 
  */
-const depth =
-{
-	assets   : 2,
-	scripts  : 2,
-	styles   : 2,
-	includes : 2
+
+// Server
+
+gulp.task('server', ['assets', 'styles', 'scripts'], () => {
+  browserSync.init({
+    proxy   : `http://localhost/${local}public/`,
+    browser : 'Google Chrome'
+  })
+  gulp.watch(`${config.src}assets/**/*.*`, ['assets'])
+  gulp.watch([
+    `${config.src}scss/**/*.scss`,
+    `${config.src}scss/*.scss`
+  ], ['styles'])
+})
+
+// Assets
+
+gulp.task('assets', () => {
+  return gulp.src(`${config.sources}assets/**/*.*`)
+    .pipe($.plumber())
+    .on('error', $.notify.onError({
+      title   : 'Assets',
+      message : message.error,
+      sound   : 'beep'
+    }))
+    .pipe(gulp.dest(`${config.public}assets/`))
+    .pipe(browserSync.stream())
+    .pipe($.notify({
+      title   : 'Assets',
+      message : message.exported,
+      sound   : 'beep'
+    }))
+})
+
+// Styles
+
+gulp.task('styles', () => {
+  return gulp.src(`${config.sources}styles/app.scss`)
+    .pipe($.plumber())
+    .pipe($.sourcemaps.init({ loadMaps: true }))
+    .pipe($.sass())
+    .on('error', $.notify.onError({
+      title   : 'Styles',
+      message : message.error,
+      sound   : 'beep'
+    }))
+    .pipe($.autoprefixer({
+      browsers: ['last 2 versions'],
+      cascade: false
+    }))
+    .pipe($.sourcemaps.write('./'))
+    .pipe(gulp.dest(`${config.public}styles/`))
+    .pipe(browserSync.stream())
+    .pipe($.notify({
+      title   : 'Styles',
+      message : message.compiled,
+      sound   : 'beep'
+    }))
+})
+
+// Scripts
+
+let bundler = null
+
+const bundle = () => {
+  bundler.bundle()
+    .pipe($.plumber())
+    .on('error', $.notify.onError({
+      title   : 'Scripts',
+      message : message.error,
+      sound   : 'beep'
+    }))
+    .pipe(source('app.js'))
+    .pipe(buffer())
+    .pipe($.sourcemaps.init({ loadMaps: true }))
+    .pipe($.sourcemaps.write('./'))
+    .pipe(gulp.dest(`${config.public}scripts/`))
+    .pipe(browserSync.stream())
+    .pipe($.notify({
+      title   : 'Scripts',
+      message : message.transpiled,
+      sound   : 'beep'
+    }))
 }
 
-/**
- * Names
- */
-const name =
-{
-	any     : '*',
-	scripts : 'app',
-	styles  : 'app',
-	root    : 'index'
-}
-
-/**
- * Extensions
- */
-const extension =
-{
-	assets   : '.*',
-	scripts  : '.js',
-	styles   : '.styl',
-	includes : '.+(php|twig|htaccess)'
-}
-
-/**
- * Sets
- */
-const set = (path, depth, extension, exception = undefined) =>
-{
-	const pathSet     = []
-	let pathDirectory = ''
-
-	for (let i = 0 ; i <= depth ; i++)
-	{
-		pathSet.push(`${path}${pathDirectory}*${extension}`)
-		pathDirectory += '**/'
-	}
-
-	if (exception)
-	{
-		for (const file of exception)
-		{
-			pathSet.push(`!${file}`)
-		}
-	}
-
-	return pathSet
-}
-
-/**
- * Files
- */
-const file =
-{
-	assets   : set(path.build.assets,  depth.assets,   extension.assets),
-	scripts  : set(path.build.scripts, depth.scripts,  extension.scripts),
-	styles   : set(path.build.styles,  depth.styles,   extension.styles),
-	includes : set(path.includes.root, depth.includes, extension.includes, [`${path.includes.root}index.php`]),
-	index    : [`${path.includes.root}${name.root}${extension.includes}`, `${path.includes.root}${extension.includes}`]
-}
-
-/**
- * Messages
- */
-const message =
-{
-	compiled   : '<%= file.relative %> : file compiled',
-	exported   : '<%= file.relative %> : file exported',
-	transpiled : '<%= file.relative %> : file transpiled',
-	updated    : '<%= file.relative %> : file updated',
-	error      : '<%= error.message %>'
-}
-
-/**
- * Assets
- */
-gulp.task('assets', () =>
-{
-	return gulp.src(file.assets)
-		.pipe(gulpPlumber(
-			{
-				errorHandler : gulpNotify.onError(
-					{
-						title   : 'Assets',
-						message : message.error,
-						sound   : 'beep'
-					})
-			})
-		)
-		.pipe(gulp.dest(path.public.assets))
-		.pipe(browserSync.stream())
-		.pipe(gulpNotify(
-			{
-				title   : 'Assets',
-				message : message.exported,
-				sound   : 'beep'
-			})
-		)
+gulp.task('scripts', () => {
+  bundler = browserify({
+    entries : `${config.sources}scripts/app.js`,
+    debug   : true,
+    paths   : ['./node_modules', `${config.sources}scripts/`]
+  }).transform(babelify)
+  bundler.plugin(watchify)
+  bundler.on('update', bundle)
+  bundle()
 })
 
 /**
- * Scripts
+ * 
+ * Production
+ * 
  */
-gulp.task('scripts', () =>
-{
-	return browserify(
-		{
-			debug   : true,
-			entries : `${path.build.scripts}${name.scripts}${extension.scripts}`
-		})
-		.transform(babelify.configure(
-			{
-				presets : ['babel-preset-env'].map(require.resolve)
-			})
-		)
-		.bundle()
-		.pipe(source(`${name.scripts}.js`))
-		.pipe(buffer())
-		.pipe(gulpPlumber(
-			{
-				errorHandler : gulpNotify.onError(
-					{
-						title   : 'Scripts',
-						message : message.error,
-						sound   : 'beep'
-					})
-			})
-		)
-		.pipe(gulp.dest(path.public.scripts))
-		.pipe(browserSync.stream())
-		.pipe(gulpNotify(
-			{
-				title   : 'Scripts',
-				message : message.transpiled,
-				sound   : 'beep'
-			})
-		)
+
+// CSS
+
+gulp.task('css', () => {
+  return gulp.src(`${config.public}styles/app.css`)
+    .pipe($.cssnano())
+    .on('error', $.notify.onError({
+      title   : 'Styles',
+      message : message.error,
+      sound   : 'beep'
+    }))
+    .pipe(gulp.dest(`${config.public}styles/`))
+    .pipe($.notify({
+      title   : 'Styles',
+      message : message.minified,
+      sound   : 'beep'
+    }))
+})
+
+// JS
+
+gulp.task('js', () => {
+  return gulp.src(`${config.public}scripts/app.js`)
+    .pipe($.uglify())
+    .on('error', $.notify.onError({
+      title   : 'Scripts',
+      message : message.error,
+      sound   : 'beep'
+    }))
+    .pipe(gulp.dest(`${config.public}scripts/`))
+    .pipe($.notify({
+      title   : 'Scripts',
+      message : message.minified,
+      sound   : 'beep'
+    }))
+})
+
+// Images
+
+gulp.task('img', () => {
+  return gulp.src(`${config.public}assets/images/*.+(png|jpg|jpeg|gif|svg)`)
+    .pipe($.imagemin())
+    .on('error', $.notify.onError({
+      title   : 'Images',
+      message : message.error,
+      sound   : 'beep'
+    }))
+    .pipe(gulp.dest(`${config.public}assets/images/`))
+    .pipe($.notify({
+      title   : 'Images',
+      message : message.minified,
+      sound   : 'beep'
+    }))
+})
+
+// Maps
+
+gulp.task('maps', () => {
+  return gulp.src([
+    `${config.public}scripts/app.js.map`,
+    `${config.public}styles/app.css.map`
+  ])
+    .pipe($.clean({
+      force: true,
+      read: false
+    }))
+    .on('error', $.notify.onError({
+      title   : 'Maps',
+      message : message.error,
+      sound   : 'beep'
+    }))
+    .pipe($.notify({
+      title   : 'Maps',
+      message : message.cleaned,
+      sound   : 'beep'
+    }))
 })
 
 /**
- * Styles
+ * 
+ * Run
+ * 
  */
-gulp.task('styles', () =>
-{
-	return gulp.src(`${path.build.styles}${name.styles}${extension.styles}`)
-		.pipe(gulpPlumber(
-			{
-				errorHandler : gulpNotify.onError(
-					{
-						title   : 'Styles',
-						message : message.error,
-						sound   : 'beep'
-					})
-			})
-		)
-		.pipe(gulpStylus())
-		.pipe(gulpAutoprefixer())
-		.pipe(gulp.dest(path.public.styles))
-		.pipe(browserSync.stream())
-		.pipe(gulpNotify(
-			{
-				title   : 'Styles',
-				message : message.compiled,
-				sound   : 'beep'
-			})
-		)
-})
 
-/**
- * Includes
- */
-gulp.task('includes', () =>
-{
-	return gulp.src(file.includes)
-		.pipe(gulpPlumber(
-			{
-				errorHandler : gulpNotify.onError(
-					{
-						title   : 'Includes',
-						message : message.error,
-						sound   : 'beep'
-					})
-			})
-		)
-		.pipe(gulpNotify(
-			{
-				title   : 'Includes',
-				message : message.updated,
-				sound   : 'beep'
-			})
-		)
-})
-
-/**
- * Index
- */
-gulp.task('index', () =>
-{
-	return gulp.src(file.index)
-		.pipe(gulpPlumber(
-			{
-				errorHandler : gulpNotify.onError(
-					{
-						title   : 'Index',
-						message : message.error,
-						sound   : 'beep'
-					})
-			})
-		)
-		.pipe(gulp.dest(path.public.root)).pipe(gulpNotify(
-			{
-				title   : 'Index',
-				message : message.updated,
-				sound   : 'beep'
-			})
-		)
-})
-
-/**
- * Watches
- */
-gulp.task('watch', () =>
-{
-	// Run browser
-	browserSync.init(
-		{
-			browser : 'Google Chrome',
-			proxy   : `http://localhost/${path.project}`
-		}
-	)
-
-	// Watch assets
-	gulp.watch(file.assets, ['assets'])
-
-	// Watch scripts
-	gulp.watch(file.scripts, ['scripts'])
-
-	// Watch styles
-	gulp.watch(file.styles, ['styles'])
-
-	// Watch includes
-	gulp.watch(file.includes, ['includes'])
-		.on('change', browserSync.reload)
-
-	// Watch index
-	gulp.watch(file.index, ['index'])
-		.on('change', browserSync.reload)
-})
-
-/**
- * Minify
- */
-gulp.task('minify', () =>
-{
-	// Scripts
-	gulp.src([`${path.public.scripts}*.js`])
-		.pipe(gulpUglify())
-		.pipe(gulp.dest(path.public.scripts))
-		.pipe(gulpNotify(
-			{
-				title   : 'Styles',
-				message : message.exported,
-				sound   : 'beep'
-			})
-		)
-
-	// Styles
-	gulp.src([`${path.public.styles}*.css`])
-		.pipe(gulpCssnano())
-		.pipe(gulp.dest(path.public.styles))
-		.pipe(gulpNotify(
-			{
-				title   : 'Scripts',
-				message : message.exported,
-				sound   : 'beep'
-			})
-		)
-})
-
-/**
- * Default
- */
-gulp.task('default', ['assets', 'scripts', 'styles', 'includes', 'index', 'watch'])
+gulp.task('default', ['server'])
+gulp.task('prod', ['css', 'js', 'img', 'maps'])
