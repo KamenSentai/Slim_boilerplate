@@ -1,6 +1,6 @@
 <?php
 
-namespace Template\Models;
+namespace Boilerplate\Models;
 
 /**
  * Class Database

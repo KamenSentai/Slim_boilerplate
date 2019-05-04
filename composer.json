@@ -1,5 +1,5 @@
 {
-  "name": "slim/template",
+  "name": "slim/boilerplate",
   "license": "MIT",
   "authors": [
     {
@@ -13,9 +13,9 @@
   },
   "autoload": {
     "psr-4": {
-      "Template\\Models\\": "./includes/models/",
-      "Template\\Views\\": "./includes/views/",
-      "Template\\Controllers\\": "./includes/controllers/"
+      "Boilerplate\\Models\\": "./includes/models/",
+      "Boilerplate\\Views\\": "./includes/views/",
+      "Boilerplate\\Controllers\\": "./includes/controllers/"
     }
   }
 }

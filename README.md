@@ -1,7 +1,7 @@
-# Slim Framwork template
+# Slim Framwork boilerplate
 
 ## Description
-- Template using Slim Framework
+- Boilerplate using Slim Framework
 
 ## Usage
 - Run `npm install` to install front-end dependencies

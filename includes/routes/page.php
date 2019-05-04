@@ -1,9 +1,9 @@
 <?php
 
 // Namespaces
-use \Template\Models      as TM;
-use \Template\Views       as TV;
-use \Template\Controllers as TC;
+use \Boilerplate\Models      as TM;
+use \Boilerplate\Views       as TV;
+use \Boilerplate\Controllers as TC;
 
 // Home
 $container['getHome'] = function($container) {

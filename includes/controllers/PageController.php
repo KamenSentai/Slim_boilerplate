@@ -1,6 +1,6 @@
 <?php
 
-namespace Template\Controllers;
+namespace Boilerplate\Controllers;
 
 // Namespaces
 use \Psr\Http\Message\ServerRequestInterface as Request;
